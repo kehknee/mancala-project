@@ -66,13 +66,13 @@ class MancalaSpace:
         return next_player, extra_turn, game_over
 
     def is_game_over(self) -> bool:
-        # Checks if either players' side of cups are fully empty
-        side0_empty = all(self.cups[i] == 0 for i in self.user_cups(0)) 
+        # The game will end if one player's entire side of cups is fully empty
+        side0_empty = all(self.cups[i] == 0 for i in self.user_cups(0))
         side1_empty = all(self.cups[i] == 0 for i in self.user_cups(1))
         return side0_empty or side1_empty
 
     def sweep_remaining(self):
-        """When game is over, remaining stones go into each player's mancala"""
+        """When game is over, remaining stones go into each player's mancala depending on the stones on the sides"""
         # player 0 side
         side0_stones = sum(self.cups[i] for i in self.user_cups(0))
         for i in self.user_cups(0):
@@ -83,6 +83,7 @@ class MancalaSpace:
         for i in self.user_cups(1):
             self.cups[i] = 0
         self.cups[self.mancala_index(1)] += side1_stones
+
 
     def print_space(self):
         user_row = [12, 11, 10, 9, 8, 7]
