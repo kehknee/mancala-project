@@ -57,7 +57,6 @@ class MancalaSpace:
                 self.cups[own_store] += captured + 1
 
         # If either side has fully empty cups, game is over
-        # TO-DO: Implement is_game_over and sweep_remaining
         game_over = self.is_game_over() 
         if game_over:
             self.sweep_remaining()
@@ -83,6 +82,19 @@ class MancalaSpace:
         for i in self.user_cups(1):
             self.cups[i] = 0
         self.cups[self.mancala_index(1)] += side1_stones
+
+    def score(self):
+        return self.cups[6], self.cups[13]
+
+    def winner(self):
+        """Return 0 if player 0 wins, 1 if player 1 wins, or None for tie."""
+        s0, s1 = self.score()
+        if s0 > s1:
+            return 0
+        elif s1 > s0:
+            return 1
+        else:
+            return None
 
 
     def print_space(self):
