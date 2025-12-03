@@ -1,3 +1,5 @@
+from math import inf
+
 class MancalaSpace:
     def __init__(self, cups):
         self.cups = cups
@@ -12,12 +14,12 @@ class MancalaSpace:
     def user_cups(self, player: int):
         return range(0, 6) if player == 0 else range(7, 13)
 
-    def user_mancala(self, player: int): # User is player 0
+    def mancala_index(self, player: int) -> int:    # User
         return 6 if player == 0 else 13
 
-    def agent_mancala(self, player: int): # Agent is player 1
-        return 13 if player == 1 else 6
-    
+    def opponent_mancala_index(self, player: int) -> int:   # Agent
+        return 13 if player == 0 else 6
+
     def legal_moves(self, player: int): # Returns what pits each player is allowed to play
         return [i for i in self.user_cups(player) if self.cups[i] > 0]
     
@@ -96,7 +98,6 @@ class MancalaSpace:
         else:
             return None
 
-
     def print_space(self):
         user_row = [12, 11, 10, 9, 8, 7]
         agent_row = [0, 1, 2, 3, 4, 5]
@@ -109,4 +110,35 @@ class MancalaSpace:
 
 if __name__ == "__main__":
     space = MancalaSpace.game_start()
-    space.print_space()
+    current_player = 0  # 0 = human, 1 = AI
+
+    while True:
+        space.print_space()
+
+        if space.is_game_over():
+            print("Game over!")
+            s0, s1 = space.score()
+            print(f"Final score – You (player 0): {s0}, AI (player 1): {s1}")
+            winner = space.winner()
+            if winner is None:
+                print("Tie")
+            elif winner == 0:
+                print("You win!")
+            else:
+                print("AI wins.")
+            break
+
+        if current_player == 0:
+            print("Your turn (player 0).")
+            print("Your legal moves:", space.legal_moves(0))
+            move = int(input("Choose a pit index (0–5): "))
+        else:
+            # AI move
+            print("AI is thinking...")
+            # move = choose_best_move(space, current_player=1, depth=6, eval_fn=simple_eval)
+            # TO DO
+            # choose_best_move (AI uses to find next best move)
+            # eval_fn & simple_eval (evaluation functions for AI to use to decide)
+            print(f"AI chooses pit {move}")
+
+        current_player, extra_turn, game_over = space.apply_move(current_player, move)
