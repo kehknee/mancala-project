@@ -108,6 +108,34 @@ class MancalaSpace:
         print(" " * 25 + " | ".join(f"{self.cups[i]:2d}" for i in agent_row))
         print(" " * 33 + "AI Agent\n")
 
+def minimax(space: MancalaSpace, possible_moves: int, current_player: int, AI_agent: int):
+    if possible_moves == 0 or space.is_game_over():
+        return tbd_function(space, AI_agent)                    # todo: add a function for minimax algo can determine if evaluation value is good or bad for move (have AI prioritize a specific goal or keep balanced, ex. Extra Move or Capture)
+
+    moves = space.legal_moves(current_player)
+
+    if not moves:
+        return tbd_function(space, AI_agent)
+
+    if current_player == AI_agent:
+        eValue = -inf                           # Set for determining evaluation of moves 
+
+        for move in moves:
+            #todo: add way so current space is saved and create duplicate space so agent can analyze and perform minimax
+            value = minimax(possible_moves - 1, next_player, AI_agent, tbd_function)
+            eValue = max(eValue, value)                 # If current calculated move is better than best evaluation value, then update evaluation value
+        return eValue
+
+    else:
+        eValue = +inf
+
+        for move in moves:
+            #todo: add way so current space is saved and create duplicate space so agent can analyze and perform minimax
+            value = minimax(possible_moves - 1, next_player, AI_agent, tbd_function)
+            eValue = min(eValue, value)
+        return eValue
+
+
 if __name__ == "__main__":
     space = MancalaSpace.game_start()
     current_player = 0  # 0 = human, 1 = AI
