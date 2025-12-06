@@ -1,4 +1,6 @@
 from math import inf
+import copy
+import random
 
 class MancalaSpace:
     def __init__(self, cups):
@@ -20,11 +22,11 @@ class MancalaSpace:
     def opponent_mancala_index(self, player: int) -> int:   # Agent
         return 13 if player == 0 else 6
 
-    def legal_moves(self, player: int): # Returns what pits each player is allowed to play
+    def open_moves_moves(self, player: int): # Returns what pits each player is allowed to play
         return [i for i in self.user_cups(player) if self.cups[i] > 0]
     
     def apply_move(self, player: int, cup_index: int):
-        """ Apply move for player based on rules and cup index. Returns (next_player: int, extra_turn: bool, game_over: bool)"""
+        """ Apply move for player based on rules and cup index. Returns (next_player: int, extra_turn_turn: bool, game_over: bool)"""
         # basic validity
         if cup_index not in self.user_cups(player):
             raise ValueError("Chosen cup is not on player's side.")
@@ -46,7 +48,7 @@ class MancalaSpace:
             self.cups[pos] += 1
             stones -= 1
 
-        extra_turn = (pos == own_store) # if landed in your own mancala, get an extra turn
+        extra_turn_turn = (pos == own_store) # if landed in your own mancala, get an extra_turn turn
 
         # 'Capture Rule' - explained in each comment
         if (pos in self.user_cups(player)  # if cup is on your side,
@@ -63,8 +65,8 @@ class MancalaSpace:
         if game_over:
             self.sweep_remaining()
 
-        next_player = player if extra_turn and not game_over else 1 - player
-        return next_player, extra_turn, game_over
+        next_player = player if extra_turn_turn and not game_over else 1 - player
+        return next_player, extra_turn_turn, game_over
 
     def is_game_over(self) -> bool:
         # The game will end if one player's entire side of cups is fully empty
@@ -102,39 +104,86 @@ class MancalaSpace:
         user_row = [12, 11, 10, 9, 8, 7]
         agent_row = [0, 1, 2, 3, 4, 5]
 
-        print(" " * 35 + "User")
+        print(" " * 33 + "AI Agent")
         print(" " * 25 + " | ".join(f"{self.cups[i]:2d}" for i in user_row))
         print(f"{self.cups[13]:>14} {' ' * 43} {self.cups[6]:<3}")
         print(" " * 25 + " | ".join(f"{self.cups[i]:2d}" for i in agent_row))
-        print(" " * 33 + "AI Agent\n")
+        print(" " * 35 + "User\n")                                                                                             # JC: Swapped for proper user view in terminal
 
-def minimax(space: MancalaSpace, possible_moves: int, current_player: int, AI_agent: int):
+def minimax(space: MancalaSpace, possible_moves: int, current_player: int, AI_agent: int, playstyle_func):
     if possible_moves == 0 or space.is_game_over():
-        return tbd_function(space, AI_agent)                    # todo: add a function for minimax algo can determine if evaluation value is good or bad for move (have AI prioritize a specific goal or keep balanced, ex. Extra Move or Capture)
+        return playstyle_func(space, AI_agent)
 
-    moves = space.legal_moves(current_player)
-
-    if not moves:
-        return tbd_function(space, AI_agent)
+    open_moves = space.open_moves_moves(current_player)
+    if not open_moves:
+        return playstyle_func(space, AI_agent)
 
     if current_player == AI_agent:
-        eValue = -inf                           # Set for determining evaluation of moves 
+        initialize_v = -inf                                                                                                        # JC: Similiar logic as seen in Lectures 9-10
+        for move in open_moves:
+            analyze_spaceBoard = copy.deepcopy(space)                                                                              # JC: Shout out Shallow and deep copy operations from python library import copy https://docs.python.org/3/library/copy.html
+            next_player, extra_turn, game_over = analyze_spaceBoard.apply_move(current_player, move)                               # JC: Adds current values from apply_move to new copied space for agent analyzation
 
-        for move in moves:
-            #todo: add way so current space is saved and create duplicate space so agent can analyze and perform minimax
-            value = minimax(possible_moves - 1, next_player, AI_agent, tbd_function)
-            eValue = max(eValue, value)                 # If current calculated move is better than best evaluation value, then update evaluation value
-        return eValue
+            if extra_turn and not game_over:                                                                                       # JC: Changed to account for potential extra move
+                heuristic_value = minimax(analyze_spaceBoard, possible_moves, current_player, AI_agent, playstyle_func)            # JC: Changed variable name so I wouldn't keep getting confused with initialize_v 
+            else:
+                heuristic_value = minimax(analyze_spaceBoard, possible_moves - 1, next_player, AI_agent, playstyle_func)
 
-    else:
-        eValue = +inf
+            initialize_v = max(initialize_v, heuristic_value)
+        return initialize_v
+    
+    else:                                                                                                                          # JC: Same logic, now just for minimizing 
+        initialize_v = +inf
+        for move in open_moves:
+            analyze_spaceBoard = copy.deepcopy(space)
+            next_player, extra_turn, game_over = analyze_spaceBoard.apply_move(current_player, move)
 
-        for move in moves:
-            #todo: add way so current space is saved and create duplicate space so agent can analyze and perform minimax
-            value = minimax(possible_moves - 1, next_player, AI_agent, tbd_function)
-            eValue = min(eValue, value)
-        return eValue
+            if extra_turn and not game_over:
+                heuristic_value = minimax(analyze_spaceBoard, possible_moves, current_player, AI_agent, playstyle_func)
+            else:
+                heuristic_value = minimax(analyze_spaceBoard, possible_moves - 1, next_player, AI_agent, playstyle_func)
 
+            initialize_v = min(initialize_v, heuristic_value)
+        return initialize_v
+    
+def base_playstyle(space: MancalaSpace, AI_agent: int):
+    AI = space.mancala_index(AI_agent)
+    user = space.opponent_mancala_index(AI_agent)
+
+    score_difference = space.cups[AI] - space.cups[user]
+    AI_side = sum(space.cups[i] for i in space.user_cups(AI_agent))
+    user_side = sum(space.cups[i] for i in space.user_cups(1 - AI_agent))
+
+    return score_difference + 0.1 * (AI_side - user_side)                                                                       # JC: Each return for every playstyle has bias weights added that we can adjust if needed
+
+def agro_playstyle(space: MancalaSpace, AI_agent: int):                                                                          # JC: Capture move mode
+    base = base_playstyle(space, AI_agent)
+    return base + 5
+
+def extra_turn_playstyle(space: MancalaSpace, AI_agent: int):
+    base = base_playstyle(space, AI_agent)
+    return base + 3
+
+playstyle_options = [base_playstyle, agro_playstyle, extra_turn_playstyle]
+
+def best_move_determination(space: MancalaSpace, current_player: int, possible_moves: int, playstyle_func=base_playstyle):
+    open_moves = space.open_moves_moves(current_player)
+    best_score_recently = -inf
+    best_move = open_moves[0]
+
+    for move in open_moves:
+        analyze_spaceBoard = copy.deepcopy(space)
+        next_player, extra_turn, game_over = analyze_spaceBoard.apply_move(current_player, move)
+
+        if extra_turn and not game_over:
+            heuristic_value = minimax(analyze_spaceBoard, possible_moves, current_player, current_player, playstyle_func)
+        else:
+            heuristic_value = minimax(analyze_spaceBoard, possible_moves - 1, next_player, current_player, playstyle_func)
+
+        if heuristic_value > best_score_recently:
+            best_score_recently = heuristic_value
+            best_move = move
+    return best_move
 
 if __name__ == "__main__":
     space = MancalaSpace.game_start()
@@ -158,15 +207,15 @@ if __name__ == "__main__":
 
         if current_player == 0:
             print("Your turn (player 0).")
-            print("Your legal moves:", space.legal_moves(0))
+            print("Your open_moves moves:", space.open_moves_moves(0))
             move = int(input("Choose a pit index (0–5): "))
         else:
             # AI move
+            playstyle_func = random.choice(playstyle_options)
+            print(f"AI selected evaluation: {playstyle_func.__name__}")                                                       # JC: Temp print so that we can see while testing
+
             print("AI is thinking...")
-            # move = choose_best_move(space, current_player=1, depth=6, eval_fn=simple_eval)
-            # TO DO
-            # choose_best_move (AI uses to find next best move)
-            # eval_fn & simple_eval (evaluation functions for AI to use to decide)
+            move = best_move_determination(space, current_player=1, possible_moves=6, playstyle_func=base_playstyle)
             print(f"AI chooses pit {move}")
 
-        current_player, extra_turn, game_over = space.apply_move(current_player, move)
+        current_player, extra_turn_turn, game_over = space.apply_move(current_player, move)
