@@ -110,7 +110,13 @@ class MancalaSpace:
         print(" " * 25 + " | ".join(f"{self.cups[i]:2d}" for i in agent_row))
         print(" " * 35 + "User\n")                                                                                             # JC: Swapped for proper user view in terminal
 
-def alphabeta(space: MancalaSpace, depth: int, current_player: int, ai_player: int, alpha: float, beta: float, playstyle_func):
+def alphabeta(space: MancalaSpace, 
+              depth: int, 
+              current_player: int, 
+              ai_player: int, 
+              alpha: float, 
+              beta: float, 
+              playstyle_func):
     """ Depth-limited minimax with alpha–beta pruning. Space is current board, playstyle_func: heuristic eval function(space, ai_player) -> float """
 
     if depth == 0 or space.is_game_over():
