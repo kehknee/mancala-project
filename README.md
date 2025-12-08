@@ -27,6 +27,7 @@ All stones from the selected pit are lifted and distributed counter-clockwise, o
 You skip your opponent’s Mancala, but you may place stones into your own Mancala.
 
 ⭐ Special Rules
+
 3. Extra Turn
 If your last stone lands in your own Mancala, you take another turn.
 4. Capture
