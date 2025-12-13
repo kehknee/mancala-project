@@ -50,3 +50,32 @@ Final scores are the total stones in each Mancala.
 
 The player with more stones in their Mancala wins.
 A tie is possible.
+
+Additional Files
+🖥️ mancala_GUI
+
+This file provides a graphical version of the Mancala game.
+
+To run mancala_GUI:
+
+1. Make sure you have pygame installed:
+
+pip install pygame
+
+2. Once installed, run mancala_GUI.py from your IDE, terminal, or code runner.
+
+3. A game window will pop up, allowing you to play Mancala through a graphical interface.
+
+🔬 mancala_testing
+
+This file is used for running automated simulations to test and compare different heuristic functions.
+
+To use mancala_testing:
+
+1. Open the file and select which heuristic functions you want to evaluate.
+
+2. Set the number of simulations you want to run by modifying the following line:
+
+simulate_many_games(500)
+
+3. Run the file, and the simulations will execute automatically, outputting performance results for the selected heuristics.
