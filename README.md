@@ -1,3 +1,5 @@
+Link to Repo: https://github.com/kehknee/mancala-project
+
 # mancala-project
 Mancala game playing agent using AI algorithms
 All AI algorithms + game space and rules are included within mancala.py
